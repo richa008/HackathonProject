@@ -38,6 +38,7 @@ namespace MirysList
             }
 
             app.UseMvc();
+            dbContext.Database.EnsureDeleted();
             dbContext.Database.EnsureCreated();
         }
     }
