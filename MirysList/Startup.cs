@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.EntityFrameworkCore;
 using MirysList.Models;
 
 namespace MirysList
@@ -25,12 +26,13 @@ namespace MirysList
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddDbContext<AppDbContext>(option => option.UseSqlServer(Configuration.GetConnectionString("DbContextConnectionString")));
             services.AddMvc();
             services.AddDbContext<MirysListDBContext>(option => option.UseSqlServer(Configuration.GetConnectionString("DbContextConnectionString")));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, MirysListDBContext dbContext)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, AppDbContext dbContext)
         {
             if (env.IsDevelopment())
             {
