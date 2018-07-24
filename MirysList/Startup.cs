@@ -1,15 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.EntityFrameworkCore;
 using MirysList.Models;
+using MirysList.Authorization;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using System.Threading.Tasks;
+using System.Text;
+using Newtonsoft.Json;
 
 namespace MirysList
 {
@@ -26,6 +27,41 @@ namespace MirysList
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<AppDbContext>(option => option.UseSqlServer(Configuration.GetConnectionString("DbContextConnectionString")));
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("FbLogin", policy => {
+                    policy.Requirements.Add(new FbLoginRequirement());
+                });
+                options.AddPolicy("ApprovedLister", policy =>
+                {
+                    policy.Requirements.Add(new ApprovedListerRequirement());
+                });
+            });
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(options =>
+                {
+                    options.Events.OnRedirectToLogin = async context =>
+                    {
+                        context.Response.StatusCode = 401;
+                        ErrorMessage error = new ErrorMessage("A valid authorization header is required.");
+                        await context.Response.WriteAsync(JsonConvert.SerializeObject(error)).ConfigureAwait(false);
+                    };
+                });
+
+            services.AddSingleton<IAuthorizationHandler, FbLoginValidationHandler>();
+
+            services.AddHsts(options =>
+            {
+                options.Preload = true;
+                options.IncludeSubDomains = true;
+            });
+
+            services.AddHttpsRedirection(options =>
+            {
+                options.RedirectStatusCode = StatusCodes.Status307TemporaryRedirect;
+                options.HttpsPort = 44337;
+            });
+            
             services.AddMvc();
         }
 
@@ -36,6 +72,45 @@ namespace MirysList
             {
                 app.UseDeveloperExceptionPage();
             }
+            else
+            {
+                app.UseHsts();
+            }
+
+            app.UseHttpsRedirection();
+            app.UseStaticFiles();
+            app.UseCookiePolicy();
+
+            app.UseAuthentication();
+
+            app.UseStatusCodePages(async context =>
+            {
+                context.HttpContext.Response.ContentType = "application/json";
+
+                ErrorMessage error = new ErrorMessage("Unknown error");
+                switch (context.HttpContext.Response.StatusCode)
+                    {
+                        case 403:
+                            {
+                                error = new ErrorMessage("User not authorized to access this API.");
+                                break;
+                            }
+
+                        case 404:
+                            {
+                                error = new ErrorMessage("Path not found.");
+                                break;
+                            }
+
+                        case 500:
+                            {
+                                error = new ErrorMessage("Internal server error.");
+                                break;
+                            }
+                    }
+
+                await context.HttpContext.Response.WriteAsync(JsonConvert.SerializeObject(error)).ConfigureAwait(false);
+            });
 
             app.UseMvc();
             dbContext.Database.EnsureCreated();
