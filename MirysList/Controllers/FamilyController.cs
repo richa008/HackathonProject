@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MirysList.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace MirysList.Controllers
 {
     [Produces("application/json")]
-    [Route("api/family")]
     public class FamilyController : Controller
     {
         private AppDbContext _dbContext;
@@ -19,28 +19,28 @@ namespace MirysList.Controllers
             _dbContext = dbContext;
         }
 
-        // GET: api/family
-        [HttpGet]
-        public IActionResult Get(string sort)
+        // GET: families
+        [Route("families")]
+        public IActionResult GetFamilies(string sort)
         {
             IQueryable<Family> families;
             switch(sort)
             {
                 case "desc":
-                    families = _dbContext.Families.OrderByDescending(p => p.FamilyName);
+                    families = _dbContext.Families.Include(p => p.FamilyMembers).OrderByDescending(p => p.FamilyName);
                     break;
                 default:
-                    families = _dbContext.Families.OrderBy(p => p.FamilyName);
+                    families = _dbContext.Families.Include(p => p.FamilyMembers).OrderBy(p => p.FamilyName);
                     break;
             }
             return Ok(families);
         }
 
-        // GET: api/family/5
-        [HttpGet("{id}", Name = "Get")]
-        public IActionResult Get(int id)
+        // GET: family/5
+        [Route("families/{id}")]
+        public IActionResult GetFamily(int id)
         {
-            var family = _dbContext.Families.SingleOrDefault(m => m.Id == id);
+            var family = _dbContext.Families.Include(p => p.FamilyMembers).SingleOrDefault(m => m.Id == id);
             if (family == null)
             {
                 return NotFound("No record found with this Id");
@@ -49,34 +49,42 @@ namespace MirysList.Controllers
             return Ok(family);
         }
 
-        // POST: api/family
-        [HttpPost]
+        // POST: family
+        [Route("family")]
         public IActionResult Post([FromBody]Family family)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            _dbContext.Families.Add(family);
-
-            if (family.FamilyMembers != null )
+            try
             {
-                foreach (User user in family.FamilyMembers)
+                _dbContext.Families.Add(family);
+
+                if (family.FamilyMembers != null)
                 {
-                    _dbContext.Users.Add(user);
-                    UserRole userRole = new UserRole();
-                    userRole.User = user;
-                    userRole.Role = Role.Family_Member;
-                    _dbContext.UserRoles.Add(userRole);
+                    foreach (User user in family.FamilyMembers)
+                    {
+                        _dbContext.Users.Add(user);
+                        UserRole userRole = new UserRole();
+                        userRole.User = user;
+                        userRole.Role = Role.Family_Member;
+                        _dbContext.UserRoles.Add(userRole);
+                    }
                 }
+                _dbContext.SaveChanges(true);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return NotFound("Error while saving record" + e);
             }
 
-            _dbContext.SaveChanges(true);
             return Ok(family);
         }
 
-        // PUT: api/family/5
-        [HttpPut("{id}")]
+        // PUT: family/2
+        [Route("family/{id}")]
         public IActionResult Put(int id, [FromBody]Family family)
         {
             if (!ModelState.IsValid)
@@ -85,17 +93,25 @@ namespace MirysList.Controllers
             }
             if (id != family.Id)
             {
-                return BadRequest("Ids don't match");
+                return BadRequest("Query parameter Id and the Id on the input record are not the same");
             }
             try
             {
-                _dbContext.Families.Update(family);
-  
+                var originalFamily = _dbContext.Families.Include(p => p.FamilyMembers).SingleOrDefault(p => p.Id == id);
+                foreach (var member in family.FamilyMembers)
+                {
+                    if (!originalFamily.FamilyMembers.Any(item => item.Id == member.Id))
+                    {
+                        return BadRequest("Family member id is not valid");
+                    }
+                    _dbContext.Users.Update(member);
+                }
+                _dbContext.Families.Update(family); 
                 _dbContext.SaveChanges(true);
             } catch(Exception e)
             {
                 Console.WriteLine(e);
-                return NotFound("No record found with this Id" + e);
+                return NotFound("Error while udating record" + e);
             }
            
             return Ok(family);

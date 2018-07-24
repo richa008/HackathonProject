@@ -11,12 +11,16 @@ namespace MirysList.Models
         public long Id { get; set; }
 
         [Required]
+        [StringLength(100)]
         public string FamilyName { get; set; }
 
         [Required]
+        [StringLength(100)]
         public string FamilyCareOf { get; set; }
 
-        public string Phone { get; set; }
+        [DataType(DataType.PhoneNumber)]
+        [StringLength(50)]
+        public string PhoneNumber { get; set; }
 
         public string Story { get; set; }
 
@@ -32,8 +36,10 @@ namespace MirysList.Models
         public string Country { get; set; }
 
         [Required]
+        [DataType(DataType.PostalCode)]
         public string PostalCode { get; set; }
 
+        [DataType(DataType.ImageUrl)]
         public string PhotoUrl { get; set; }
 
         public virtual ICollection<User> FamilyMembers {get; set;}
