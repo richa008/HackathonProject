@@ -52,10 +52,14 @@ namespace MirysList.Controllers
         [Route("api/Shop/ShoppingList/{familyId}")]
         public IActionResult ShoppingList(int familyId)
         {
-            ShoppingList listObj = _dbContext.ShoppingLists.Where(x => x.Id == familyId).Include(u => u.Family).Include(y => y.listItems).FirstOrDefault();
-            if (listObj != null)
+            Family familyObj = _dbContext.Families.Where(x => x.Id == familyId).Include(u => u.shoppingList).FirstOrDefault();
+            if (familyObj != null)
             {
-                return Ok(listObj);
+                ShoppingList listObj = familyObj.shoppingList;
+                if (listObj != null)
+                {
+                    return Ok(listObj);
+                }
             }
 
             return NotFound("could not find a list for this family " + familyId);            
@@ -79,22 +83,26 @@ namespace MirysList.Controllers
 
         // POST: api/Shop/CreateList
         [HttpPost]
-        [Route("api/Shop/CreateList")]        
-        public IActionResult CreateList([FromBody]ShoppingList listObj)
+        [Route("api/Shop/CreateList/familyId")]        
+        public IActionResult CreateList([FromBody]ShoppingList listObj, int familyId)
         {            
             try
             {
-                _dbContext.ShoppingLists.Add(listObj);
-                foreach(ShoppingListItem item in listObj.listItems)
+                Family familyObj = _dbContext.Families.Where(x => x.Id == familyId).FirstOrDefault();
+                if (familyObj != null)
                 {
-                    _dbContext.ShoppingListItems.Add(item);
+                    _dbContext.ShoppingLists.Add(listObj);
+                    foreach (ShoppingListItem item in listObj.listItems)
+                    {
+                        _dbContext.ShoppingListItems.Add(item);
+                    }
+                    familyObj.shoppingList = listObj;
+                    _dbContext.SaveChanges();
                 }
-
-                _dbContext.SaveChanges();
             }
-            catch
+            catch(Exception e)
             {
-                return NotFound("could not create a list");
+                return NotFound("could not create a list : " + e.Message);
             }
             
             return Ok(listObj);
@@ -109,15 +117,15 @@ namespace MirysList.Controllers
             try
             {
                 listObj = _dbContext.ShoppingLists.Where(x => x.Id == listId).FirstOrDefault();
-                if(listObj != null)
+                if(listObj != null && listObj.Id == updatedListObj.Id)
                 {                                      
                     _dbContext.ShoppingLists.Update(updatedListObj);
                     _dbContext.SaveChanges();
                 }
             }
-            catch
+            catch(Exception e)
             {
-                return NotFound("could not update a list " + listId);
+                return NotFound("could not update a list : " + e.Message);
             }
 
             return Ok(updatedListObj);
