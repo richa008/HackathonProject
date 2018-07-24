@@ -45,5 +45,7 @@ namespace MirysList.Models
         public string PhotoUrl { get; set; }
 
         public virtual ICollection<User> FamilyMembers {get; set;}
+
+        public ShoppingList shoppingList { get; set; }
     }
 }
