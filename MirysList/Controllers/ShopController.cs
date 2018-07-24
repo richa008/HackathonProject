@@ -79,34 +79,25 @@ namespace MirysList.Controllers
 
         // POST: api/Shop/CreateList
         [HttpPost]
-        [Route("api/Shop/CreateList")]
-        public IActionResult CreateList()
-             //public IActionResult CreateList([FromBody]ShoppingList listObj)
-        {
-           // ShoppingList listObj = new ShoppingList();
+        [Route("api/Shop/CreateList")]        
+        public IActionResult CreateList([FromBody]ShoppingList listObj)
+        {            
             try
             {
-                //   Family family = _dbContext.Families.Where(x => x.Id == familyId).FirstOrDefault();
-                //  if(family != null)
-                // {
-                //   listObj.Family = family;
-                //   listObj.listItems = new List<ShoppingListItem>();
-                // listObj.listItems = listItems;
+                _dbContext.ShoppingLists.Add(listObj);
+                foreach(ShoppingListItem item in listObj.listItems)
+                {
+                    _dbContext.ShoppingListItems.Add(item);
+                }
 
-
-                //EntityEntry<ShoppingList> listentity = _dbContext.ShoppingLists.Add(listObj);
-                //  _dbContext.SaveChanges();
-                Console.WriteLine("hellow world");
-                
-                //}
+                _dbContext.SaveChanges();
             }
             catch
             {
-                return NotFound("could not create a list for this family ");
+                return NotFound("could not create a list");
             }
-
-            return Ok("post completed ");
-           // return Ok(listObj);
+            
+            return Ok(listObj);
         }
 
         // POST: api/Shop/UpdateList
