@@ -34,16 +34,19 @@ namespace MirysList.Controllers
         [HttpGet]
         [Route("api/Shop/Catalog/{catalogId}")]
         public IActionResult CataLogItems(int catalogId)
-        {            
-            IQueryable<CatalogItem> cItems = _dbContext.CataLogItems.Where(x => x.Catalog.Id == catalogId).Include(y => y.Category);
-            if (cItems != null)
+        {
+
+            Catalog catalog = _dbContext.Catalogs.Where(x => x.Id == catalogId).Include(c => c.Items).FirstOrDefault();
+            if (catalog != null)
             {
-                return Ok(cItems);
+                ICollection<CatalogItem> cItems = catalog.Items;
+                if (cItems != null)
+                {
+                    return Ok(cItems);
+                }
             }
-            else
-            {
-                return NotFound("could not find any catalog items for catalogid " + catalogId);
-            }
+
+            return NotFound("could not find any catalog items for catalogid " + catalogId);            
         }
 
         // GET: api/Shop/List
@@ -52,13 +55,13 @@ namespace MirysList.Controllers
         [Route("api/Shop/ShoppingList/{familyId}")]
         public IActionResult ShoppingList(int familyId)
         {
-            Family familyObj = _dbContext.Families.Where(x => x.Id == familyId).Include(u => u.shoppingList).FirstOrDefault();
+            Family familyObj = _dbContext.Families.Where(x => x.Id == familyId).Include(u => u.listItems).FirstOrDefault();
             if (familyObj != null)
             {
-                ShoppingList listObj = familyObj.shoppingList;
-                if (listObj != null)
+                List<ShoppingListItem> listItems = familyObj.listItems;
+                if (listItems != null)
                 {
-                    return Ok(listObj);
+                    return Ok(listItems);
                 }
             }
 
@@ -67,68 +70,78 @@ namespace MirysList.Controllers
 
         // GET: api/Shop/ListItems
         //param: listId
-        [HttpGet]
+        /*[HttpGet]
         [Route("api/Shop/ShoppingListItems/{shoppinglistId}")]
         public IActionResult ShoppingListItems(int shoppinglistId)
         {
-            IQueryable<ShoppingListItem> listItems = _dbContext.ShoppingListItems.Where(x => x.ShoppingList.Id == shoppinglistId).Include(u => u.CatalogItem);
-            if (listItems != null)
-            {                
-                return Ok(listItems);
+            ShoppingList list = _dbContext.ShoppingLists.Where(x => x.Id == shoppinglistId).FirstOrDefault();
+            if (list != null)
+            {
+                ICollection<ShoppingListItem> listItems = list.listItems;
+                if (listItems != null)
+                {
+                    return Ok(listItems);
+                }
             }
 
             return NotFound("could not find a list for this id " + shoppinglistId);            
-        }
+        }*/
 
 
         // POST: api/Shop/CreateList
         [HttpPost]
-        [Route("api/Shop/CreateList/familyId")]        
-        public IActionResult CreateList([FromBody]ShoppingList listObj, int familyId)
-        {            
+        [Route("api/Shop/CreateList/{familyId}")]        
+        public IActionResult CreateList([FromBody]List<ShoppingListItem> listItems, int familyId)
+        {
+            Family familyObj = null;
             try
             {
-                Family familyObj = _dbContext.Families.Where(x => x.Id == familyId).FirstOrDefault();
+                familyObj = _dbContext.Families.Where(x => x.Id == familyId).FirstOrDefault();
                 if (familyObj != null)
-                {
-                    _dbContext.ShoppingLists.Add(listObj);
-                    foreach (ShoppingListItem item in listObj.listItems)
+                {                   
+                    foreach (ShoppingListItem item in listItems)
                     {
                         _dbContext.ShoppingListItems.Add(item);
+                        familyObj.listItems.Add(item);
+                        _dbContext.Families.Update(familyObj);
                     }
-                    familyObj.shoppingList = listObj;
+                    
                     _dbContext.SaveChanges();
+                    return Ok(familyObj);
                 }
             }
             catch(Exception e)
             {
-                return NotFound("could not create a list : " + e.Message);
+                return NotFound("could not create a list : " + e);
             }
             
-            return Ok(listObj);
+            return NotFound("could not create a list");
         }
 
         // POST: api/Shop/UpdateList
         [HttpPost]
-        [Route("api/Shop/UpdateList/{listId}")]
-        public IActionResult UpdateList([FromBody]ShoppingList updatedListObj, int listId)
+        [Route("api/Shop/UpdateList/{familyId}")]
+        public IActionResult UpdateList([FromBody]List<ShoppingListItem> updatedListItems, int familyId)
         {
-            ShoppingList listObj;
+            Family familyObj;
             try
             {
-                listObj = _dbContext.ShoppingLists.Where(x => x.Id == listId).FirstOrDefault();
-                if(listObj != null && listObj.Id == updatedListObj.Id)
-                {                                      
-                    _dbContext.ShoppingLists.Update(updatedListObj);
-                    _dbContext.SaveChanges();
-                }
+                familyObj = _dbContext.Families.Where(x => x.Id == familyId).FirstOrDefault();
+                if (familyObj != null)
+                {
+                    foreach (ShoppingListItem item in updatedListItems)
+                    {
+                        _dbContext.ShoppingListItems.Update(item);
+                        _dbContext.SaveChanges();
+                    }
+                }                
             }
             catch(Exception e)
             {
                 return NotFound("could not update a list : " + e.Message);
             }
 
-            return Ok(updatedListObj);
+            return Ok(updatedListItems);
         }       
     }
 }

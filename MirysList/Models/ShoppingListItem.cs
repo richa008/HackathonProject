@@ -14,8 +14,8 @@ namespace MirysList.Models
         public CatalogItem CatalogItem { get; set; }
         [Required]
         public int Quantity { get; set; }
-        public ShoppingList ShoppingList { get; set; }
-        [Required]
-        public User User { get; set; }
+      //  public ShoppingList ShoppingList { get; set; }
+        //[Required]
+       public string ItemNotes { get; set; }
     }
 }

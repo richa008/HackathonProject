@@ -46,6 +46,6 @@ namespace MirysList.Models
 
         public virtual ICollection<User> FamilyMembers {get; set;}
 
-        public ShoppingList shoppingList { get; set; }
+        public List<ShoppingListItem> listItems { get; set; }
     }
 }
