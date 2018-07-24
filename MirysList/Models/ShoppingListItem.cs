@@ -6,12 +6,16 @@ using System.Threading.Tasks;
 
 namespace MirysList.Models
 {
-    public class Category
+    public class ShoppingListItem
     {
         [Required]
         public int Id { get; set; }
         [Required]
-        public string Title { get; set; }
-        public string ImageUrl { get; set; }
+        public CatalogItem CatalogItem { get; set; }
+        [Required]
+        public int Quantity { get; set; }
+        public ShoppingList ShoppingList { get; set; }
+        [Required]
+        public User User { get; set; }
     }
 }
