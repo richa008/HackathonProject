@@ -6,12 +6,11 @@ using System.Threading.Tasks;
 
 namespace MirysList.Models
 {
-    public class Category
+    public class ShoppingList
     {
         [Required]
         public int Id { get; set; }
-        [Required]
         public string Title { get; set; }
-        public string ImageUrl { get; set; }
+        public List<ShoppingListItem> listItems { get; set; }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
@@ -8,6 +9,7 @@ namespace MirysList.Models
 {
     public class Family
     {
+        [Required]
         public long Id { get; set; }
 
         [Required]
@@ -43,5 +45,7 @@ namespace MirysList.Models
         public string PhotoUrl { get; set; }
 
         public virtual ICollection<User> FamilyMembers {get; set;}
+
+        public List<ShoppingListItem> listItems { get; set; }
     }
 }
