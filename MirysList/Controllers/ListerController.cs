@@ -1,29 +1,33 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using MirysList.Controllers;
 using MirysList.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace MirysList.Authorization
+namespace MirysList.Controllers
 {
-    public class ApprovedListerValidationHandler : AuthorizationHandler<ApprovedListerRequirement>
+    [Authorize(Policy = "FbLogin")]
+    [Authorize(Policy = "ApprovedLister")]
+    [Produces("application/json")]
+    public class ListerController : Controller
     {
         private AppDbContext _dbContext;
 
-        public ApprovedListerValidationHandler(AppDbContext dbContext)
+        public ListerController(AppDbContext dbContext)
         {
             _dbContext = dbContext;
         }
 
-        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, ApprovedListerRequirement requirement)
+        // GET: families
+        [Route("listers")]
+        public IActionResult GetListers()
         {
             IQueryable<UserRole> listerIds = _dbContext.UserRoles.Include(p => p.Id).Where(role => role.Role == Role.Lister);
-            return Task.CompletedTask;
+            
+            return Ok(listerIds);
         }
     }
 }

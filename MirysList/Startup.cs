@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.EntityFrameworkCore;
 using MirysList.Models;
 using MirysList.Authorization;
 using Microsoft.AspNetCore.Authorization;
@@ -11,6 +11,9 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Threading.Tasks;
 using System.Text;
 using Newtonsoft.Json;
+using Microsoft.EntityFrameworkCore.Storage;
+using System;
+using System.Collections.Generic;
 
 namespace MirysList
 {
@@ -49,6 +52,7 @@ namespace MirysList
                 });
 
             services.AddSingleton<IAuthorizationHandler, FbLoginValidationHandler>();
+            services.AddTransient<IAuthorizationHandler, ApprovedListerValidationHandler>();
 
             services.AddHsts(options =>
             {
@@ -113,7 +117,35 @@ namespace MirysList
             });
 
             app.UseMvc();
+            dbContext.Database.EnsureDeleted();
             dbContext.Database.EnsureCreated();
+
+            // add in seed data to database
+            // AddSeedData(dbContext);
+        }
+
+        private void AddSeedData(AppDbContext dbContext)
+        {
+            User user1 = new User { Id = 1687949164635588, FirstName = "Lister", LastName = "Uday", Gender = Gender.Male, Language = "English", PhoneNumber = "123-234-3456", BirthDate = DateTime.Parse("11/11/1994") };
+            User user2 = new User { Id = 1687949164635587, FirstName = "Lister", LastName = "Phil", Gender = Gender.Male, Language = "English", PhoneNumber = "123-234-3456", BirthDate = DateTime.Parse("11/11/1994") };
+            User user3 = new User { Id = 1687949164635586, FirstName = "Lister", LastName = "Richa", Gender = Gender.Female, Language = "English", PhoneNumber = "123-234-3456", BirthDate = DateTime.Parse("11/11/1994") };
+            User user4 = new User { Id = 1687949164635585, FirstName = "Lister", LastName = "Swapna", Gender = Gender.Female, Language = "English", PhoneNumber = "123-234-3456", BirthDate = DateTime.Parse("11/11/1994") };
+            User user5 = new User { Id = 1687949164635584, FirstName = "Lister", LastName = "Ankur", Gender = Gender.Male, Language = "English", PhoneNumber = "123-234-3456", BirthDate = DateTime.Parse("11/11/1994") };
+            dbContext.Users.AddRange(new List<User> { user1, user2, user3, user4, user5 });
+            dbContext.SaveChanges();
+
+            List<UserRole> userRoles = new List<UserRole>();
+            userRoles.Add(new UserRole { Id = 1687949164635588, Role = Role.Lister, User = user1 });
+            userRoles.Add(new UserRole { Id = 1687949164635587, Role = Role.Lister, User = user2 });
+            userRoles.Add(new UserRole { Id = 1687949164635586, Role = Role.Lister, User = user3 });
+            userRoles.Add(new UserRole { Id = 1687949164635585, Role = Role.Lister, User = user4 });
+            userRoles.Add(new UserRole { Id = 1687949164635584, Role = Role.Lister, User = user5 });
+            dbContext.UserRoles.AddRange(userRoles);
+            dbContext.SaveChanges();
+
+            //List<Category>
+
+            dbContext.SaveChanges();
         }
     }
 }

@@ -121,7 +121,11 @@ namespace MirysList.Authorization
                     }
                 }
 
-                if (parsedAccessToken == null)
+                // TODO: REMOVE THIS
+                context.Succeed(requirement);
+                return Task.CompletedTask;
+
+                if (parsedAccessToken == null || string.IsNullOrWhiteSpace(parsedAccessToken.UserId) || string.IsNullOrWhiteSpace(parsedAccessToken.AppId))
                 {
                     context.Fail();
                     SetResponse(mvc, 401, Resources.InvalidAuthHeader);
@@ -134,6 +138,8 @@ namespace MirysList.Authorization
                     SetResponse(mvc, 401, Resources.InvalidAuthHeader);
                     return Task.CompletedTask;
                 }
+
+                mvc.HttpContext.User = new Principal { Id = parsedAccessToken.UserId };
 
                 context.Succeed(requirement);
                 return Task.CompletedTask;
