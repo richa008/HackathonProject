@@ -25,9 +25,9 @@ namespace MirysList.Controllers
         // GET: families
         [HttpGet]
         [Route("families/listerId/{id}")]
-        public IActionResult GetFamilies(int id)
+        public IActionResult GetFamilies(string id)
         {
-            var lister = _dbContext.Lister.Include(p => p.Families).SingleOrDefault(m => m.Id == id);
+            var lister = _dbContext.Lister.Include(p => p.Families).SingleOrDefault(m => string.Equals(m.Id, id));
             if (lister == null)
             {
                 return NotFound("No record found with this Id");
@@ -53,9 +53,9 @@ namespace MirysList.Controllers
         // POST: family
         [HttpPost]
         [Route("family/listerId/{id}")]
-        public IActionResult Post(int id, [FromBody]Family family)
+        public IActionResult Post(string id, [FromBody]Family family)
         {
-            var lister = _dbContext.Lister.Include(p => p.Families).SingleOrDefault(m => m.Id == id);
+            var lister = _dbContext.Lister.Include(p => p.Families).SingleOrDefault(m => string.Equals(m.Id, id));
             if (lister == null)
             {
                 return NotFound("No record found with this Id");
