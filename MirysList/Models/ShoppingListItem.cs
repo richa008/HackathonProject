@@ -27,7 +27,7 @@ namespace MirysList.Models
         public int Id { get; set; }       
         
         public int CatalogItemId { get; set; }
-
+        
         [Required]
         public int Quantity { get; set; }
 

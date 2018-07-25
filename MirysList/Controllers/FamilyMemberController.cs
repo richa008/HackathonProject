@@ -6,9 +6,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MirysList.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MirysList.Controllers
 {
+    [Authorize(Policy = "FbLogin")]
+    [Authorize(Policy = "ApprovedLister")]
     [Produces("application/json")]
     public class FamilyMemberController : Controller
     {

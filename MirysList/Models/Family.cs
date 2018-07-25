@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -26,9 +27,9 @@ namespace MirysList.Models
         public string Story { get; set; }
 
         [Required]
-        public string StreetAddresssLine1 { get; set; }
+        public string StreetAddressLine1 { get; set; }
 
-        public string StreetAddresssLine2 { get; set; }
+        public string StreetAddressLine2 { get; set; }
 
         [Required]
         public string City { get; set; }

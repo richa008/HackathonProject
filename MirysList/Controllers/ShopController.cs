@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 using MirysList.Models;
-using Newtonsoft.Json;
 
 namespace MirysList.Controllers
 {
+    [Authorize(Policy = "FbLogin")]
+    [Authorize(Policy = "ApprovedLister")]
     [Produces("application/json")]    
     public class ShopController : Controller
     {
