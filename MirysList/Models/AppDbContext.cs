@@ -22,5 +22,6 @@ namespace MirysList.Models
         public DbSet<Category> Categories { get; set; }
         public DbSet<ShoppingListItem> ShoppingListItems { get; set; }
         public DbSet<FamilyMember> FamilyMembers { get; set; }
+        public DbSet<Lister> Lister { get; set; }
     }
 }

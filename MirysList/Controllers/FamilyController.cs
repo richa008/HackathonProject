@@ -20,23 +20,21 @@ namespace MirysList.Controllers
         }
 
         // GET: families
-        [Route("families")]
-        public IActionResult GetFamilies(string sort)
+        [HttpGet]
+        [Route("families/listerId/{id}")]
+        public IActionResult GetFamilies(int id)
         {
-            IQueryable<Family> families;
-            switch(sort)
+            var lister = _dbContext.Lister.Include(p => p.Families).SingleOrDefault(m => m.Id == id);
+            if (lister == null)
             {
-                case "desc":
-                    families = _dbContext.Families.Include(p => p.FamilyMembers).OrderByDescending(p => p.FamilyName);
-                    break;
-                default:
-                    families = _dbContext.Families.Include(p => p.FamilyMembers).OrderBy(p => p.FamilyName);
-                    break;
+                return NotFound("No record found with this Id");
             }
+            var families = _dbContext.Families.OrderBy(p => p.FamilyName);
             return Ok(families);
         }
 
         // GET: family/5
+        [HttpGet]
         [Route("families/{id}")]
         public IActionResult GetFamily(int id)
         {
@@ -50,17 +48,20 @@ namespace MirysList.Controllers
         }
 
         // POST: family
-        [Route("family")]
-        public IActionResult Post([FromBody]Family family)
+        [HttpPost]
+        [Route("family/listerId/{id}")]
+        public IActionResult Post(int id, [FromBody]Family family)
         {
-            if (!ModelState.IsValid)
+            var lister = _dbContext.Lister.Include(p => p.Families).SingleOrDefault(m => m.Id == id);
+            if (lister == null)
             {
-                return BadRequest(ModelState);
+                return NotFound("No record found with this Id");
             }
             try
             {
+                lister.Families.Add(family);
+                _dbContext.Lister.Update(lister);
                 _dbContext.Families.Add(family);
-
                 if (family.FamilyMembers != null)
                 {
                     foreach (FamilyMember member in family.FamilyMembers)
@@ -68,18 +69,19 @@ namespace MirysList.Controllers
                         _dbContext.FamilyMembers.Add(member);
                     }
                 }
-                _dbContext.SaveChanges(true);
+                _dbContext.SaveChanges();
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
                 return NotFound("Error while saving record" + e);
             }
-
             return Ok(family);
         }
 
         // PUT: family/2
+        // Doesn't update family members and list items
+        [HttpPut]
         [Route("family/{id}")]
         public IActionResult Put(int id, [FromBody]Family family)
         {
@@ -91,17 +93,12 @@ namespace MirysList.Controllers
             {
                 return BadRequest("Query parameter Id and the Id on the input record are not the same");
             }
+            if (family.FamilyMembers.Count > 0 || family.ListItems.Count > 0)
+            {
+                return BadRequest("Family members and list items in request should be 0");
+            }
             try
             {
-                var originalFamily = _dbContext.Families.Include(p => p.FamilyMembers).SingleOrDefault(p => p.Id == id);
-                foreach (var member in family.FamilyMembers)
-                {
-                    if (!originalFamily.FamilyMembers.Any(item => item.Id == member.Id))
-                    {
-                        return BadRequest("Family member id is not valid");
-                    }
-                    _dbContext.FamilyMembers.Update(member);
-                }
                 _dbContext.Families.Update(family); 
                 _dbContext.SaveChanges(true);
             } catch(Exception e)

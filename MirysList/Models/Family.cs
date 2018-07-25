@@ -26,9 +26,9 @@ namespace MirysList.Models
         public string Story { get; set; }
 
         [Required]
-        public string StreetAdresssLine1 { get; set; }
+        public string StreetAddresssLine1 { get; set; }
 
-        public string StreetAdresssLine2 { get; set; }
+        public string StreetAddresssLine2 { get; set; }
 
         [Required]
         public string City { get; set; }

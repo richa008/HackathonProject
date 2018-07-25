@@ -14,5 +14,7 @@ namespace MirysList.Models
         public string FirstName { get; set; }
 
         public string LastName { get; set; }
+
+        public virtual List<Family> Families { get; set; }
     }
 }
