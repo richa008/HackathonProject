@@ -40,7 +40,7 @@ namespace MirysList.Controllers
         [Route("families/{id}")]
         public IActionResult GetFamily(int id)
         {
-            var family = _dbContext.Families.Include(p => p.FamilyMembers).SingleOrDefault(m => m.Id == id);
+            var family = _dbContext.Families.Include(p => p.FamilyMembers).Include(i => i.listItems).SingleOrDefault(m => m.Id == id);
             if (family == null)
             {
                 return NotFound("No record found with this Id");
