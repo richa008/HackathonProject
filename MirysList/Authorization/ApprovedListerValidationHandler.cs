@@ -1,8 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using MirysList.Controllers;
+using Microsoft.AspNetCore.Mvc.Filters;
 using MirysList.Models;
 using System;
 using System.Collections.Generic;
@@ -22,8 +19,34 @@ namespace MirysList.Authorization
 
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, ApprovedListerRequirement requirement)
         {
-            IQueryable<UserRole> listerIds = _dbContext.UserRoles.Include(p => p.Id).Where(role => role.Role == Role.Lister);
-            return Task.CompletedTask;
+            IQueryable<string> listerIds = _dbContext.Listers.Select(lister => lister.Id);
+
+            if (context.Resource is AuthorizationFilterContext mvc)
+            {
+                if (mvc.HttpContext.User != null)
+                {
+                    // retrieve Id from the user principal and compare it against the list of approved listerIds.
+                    Principal userPrincipal = (Principal)mvc.HttpContext.User;
+                    HashSet<string> listerIdSet = new HashSet<string>();
+                    foreach (string id in listerIds)
+                    {
+                        listerIdSet.Add(id);
+                    }
+
+                    if (listerIdSet.Contains(userPrincipal.Id))
+                    {
+                        context.Succeed(requirement);
+                        return Task.CompletedTask;
+                    }
+                }
+                
+                context.Fail();
+                return Task.CompletedTask;   
+            }
+            else
+            {
+                throw new Exception("MVC context does not exist");
+            }
         }
     }
 }

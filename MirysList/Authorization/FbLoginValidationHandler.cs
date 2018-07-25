@@ -14,6 +14,7 @@ using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 
@@ -34,20 +35,20 @@ namespace MirysList.Authorization
                     authHeaderValue = authHeaderValues[0];
                 }
 
+                // return 401 if auth header is not found
+                if (string.IsNullOrWhiteSpace(authHeaderValue))
+                {
+                    context.Fail();
+                    // SetResponse(mvc, 401, Resources.NoAuthHeaderInRequest);    
+                    return Task.CompletedTask;
+                }
+
                 //string authCode = string.Empty;
                 //if (mvc.HttpContext.Request.Headers.TryGetValue("AuthCode", out StringValues authCodeValues))
                 //{
                 //    authCode = authCodeValues[0];
                 //}
-
-                // return 401 if auth header is not found
-                if (string.IsNullOrWhiteSpace(authHeaderValue))
-                {
-                    context.Fail();
-                    SetResponse(mvc, 401, Resources.NoAuthHeaderInRequest);    
-                    return Task.CompletedTask;
-                }
-
+                
                 /*
                  * We expect the OAuth signed_request of the logged in Facebook user, in the Authorization header
                  * We split the encoded signature and the encoded payload and check if the hmac of the payload matched the received signature
@@ -91,8 +92,10 @@ namespace MirysList.Authorization
 
                 // exchange the access code for a user access token
                 //string requestUriFormat = $"https://graph.facebook.com/v3.0/oauth/access_token?client_id={{0}}&redirect_uri={{1}}&client_secret={{2}}&code={{3}}";
+
                 string clientId = "2112677595641957";
-                //string clientSecret = "d5d0b3fb2d34384637e089795a4c4186";
+                
+                //string clientSecret = "";
                 //string redirectUri = "https://localhost:44334/"; // the client app's URL
                 //string encodedUrl = WebUtility.UrlEncode(redirectUri);
                 ////string requestUri = string.Format(requestUriFormat, clientId, redirectUri, clientSecret, fbPayload.AuthCode);
@@ -104,6 +107,7 @@ namespace MirysList.Authorization
                 //FbCodeExchangeParsed parsedCodeExchange = JsonConvert.DeserializeObject<FbCodeExchangeParsed>(content);
 
                 // Verify the received access token and retrieve user_id and app information
+                // TODO: PUT THIS IN KV!!
                 string appAccessToken = "2112677595641957|z0TQzEk--Ibx3C71BJnS1Rcg0xA";
                 // string debugTokenUrl = $"https://graph.facebook.com/v3.0/debug_token?input_token={parsedCodeExchange.AccessToken}&access_token={appAccessToken}";
                 string debugTokenUrl = $"https://graph.facebook.com/v3.0/debug_token?input_token={authHeaderValue}&access_token={appAccessToken}";
@@ -121,25 +125,26 @@ namespace MirysList.Authorization
                     }
                 }
 
-                // TODO: REMOVE THIS
-                context.Succeed(requirement);
-                return Task.CompletedTask;
+                // Added for debugging
+                //context.Succeed(requirement);
+                //return Task.CompletedTask;
 
                 if (parsedAccessToken == null || string.IsNullOrWhiteSpace(parsedAccessToken.UserId) || string.IsNullOrWhiteSpace(parsedAccessToken.AppId))
                 {
                     context.Fail();
-                    SetResponse(mvc, 401, Resources.InvalidAuthHeader);
+                    // SetResponse(mvc, 401, Resources.InvalidAuthHeader);
                     return Task.CompletedTask;
                 }
 
                 if (!string.Equals(parsedAccessToken.AppId, clientId))
                 {
                     context.Fail();
-                    SetResponse(mvc, 401, Resources.InvalidAuthHeader);
+                    // SetResponse(mvc, 401, Resources.InvalidAuthHeader);
                     return Task.CompletedTask;
                 }
 
                 mvc.HttpContext.User = new Principal { Id = parsedAccessToken.UserId };
+                Thread.CurrentPrincipal = mvc.HttpContext.User;
 
                 context.Succeed(requirement);
                 return Task.CompletedTask;
