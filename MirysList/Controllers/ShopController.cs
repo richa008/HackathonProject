@@ -56,10 +56,10 @@ namespace MirysList.Controllers
         [Route("api/Shop/ShoppingList/{familyId}")]
         public IActionResult ShoppingList(int familyId)
         {
-            Family familyObj = _dbContext.Families.Where(x => x.Id == familyId).Include(u => u.listItems).FirstOrDefault();
+            Family familyObj = _dbContext.Families.Where(x => x.Id == familyId).Include(u => u.ListItems).FirstOrDefault();
             if (familyObj != null)
             {
-                List<ShoppingListItem> listItems = familyObj.listItems;
+                List<ShoppingListItem> listItems = familyObj.ListItems;
                 List<ShoppingListItem> resultItems = new List<ShoppingListItem>();
                 if (listItems != null)
                 {
@@ -76,26 +76,6 @@ namespace MirysList.Controllers
             return NotFound("could not find a list for this family " + familyId);            
         }
 
-        // GET: api/Shop/ListItems
-        //param: listId
-        /*[HttpGet]
-        [Route("api/Shop/ShoppingListItems/{shoppinglistId}")]
-        public IActionResult ShoppingListItems(int shoppinglistId)
-        {
-            ShoppingList list = _dbContext.ShoppingLists.Where(x => x.Id == shoppinglistId).FirstOrDefault();
-            if (list != null)
-            {
-                ICollection<ShoppingListItem> listItems = list.listItems;
-                if (listItems != null)
-                {
-                    return Ok(listItems);
-                }
-            }
-
-            return NotFound("could not find a list for this id " + shoppinglistId);            
-        }*/
-
-
         // POST: api/Shop/CreateList
         [HttpPost]
         [Route("api/Shop/CreateList/{familyId}")]        
@@ -105,7 +85,7 @@ namespace MirysList.Controllers
             Family familyObj = null;
             try
             {
-                familyObj = _dbContext.Families.Where(x => x.Id == familyId).Include(y => y.listItems).FirstOrDefault();
+                familyObj = _dbContext.Families.Where(x => x.Id == familyId).Include(y => y.ListItems).FirstOrDefault();
                 if (familyObj != null)
                 {                   
                     foreach (ShoppingListItem item in listItems)
@@ -116,7 +96,7 @@ namespace MirysList.Controllers
                             _dbContext.ShoppingListItems.Add(item);
                             UpdatedShoppingListItem resultItem = new UpdatedShoppingListItem(item);                            
                             resultItem.CatalogItem = i;
-                            familyObj.listItems.Add(item);
+                            familyObj.ListItems.Add(item);
                             result.Add(resultItem);
                         }
                     }

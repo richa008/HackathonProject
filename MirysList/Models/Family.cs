@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
-using System.ComponentModel.DataAnnotations;
 
 namespace MirysList.Models
 {
@@ -44,8 +43,8 @@ namespace MirysList.Models
         [DataType(DataType.ImageUrl)]
         public string PhotoUrl { get; set; }
 
-        public virtual ICollection<User> FamilyMembers {get; set;}
+        public virtual ICollection<FamilyMember> FamilyMembers {get; set;}
 
-        public List<ShoppingListItem> listItems { get; set; }
+        public virtual List<ShoppingListItem> ListItems { get; set; }
     }
 }

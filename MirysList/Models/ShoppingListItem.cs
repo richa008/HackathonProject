@@ -23,13 +23,15 @@ namespace MirysList.Models
         }
 
         [Required]
-        public int Id { get; set; }        
+        [Key]
+        public int Id { get; set; }       
+        
         public int CatalogItemId { get; set; }
+
         [Required]
         public int Quantity { get; set; }
-      //  public ShoppingList ShoppingList { get; set; }
-        //[Required]
-       public string ItemNotes { get; set; }
+
+        public string ItemNotes { get; set; }
     }
 
     public class UpdatedShoppingListItem : ShoppingListItem

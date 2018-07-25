@@ -40,7 +40,7 @@ namespace MirysList.Controllers
         [Route("families/{id}")]
         public IActionResult GetFamily(int id)
         {
-            var family = _dbContext.Families.Include(p => p.FamilyMembers).Include(i => i.listItems).SingleOrDefault(m => m.Id == id);
+            var family = _dbContext.Families.Include(p => p.FamilyMembers).Include(i => i.ListItems).SingleOrDefault(m => m.Id == id);
             if (family == null)
             {
                 return NotFound("No record found with this Id");
@@ -63,13 +63,9 @@ namespace MirysList.Controllers
 
                 if (family.FamilyMembers != null)
                 {
-                    foreach (User user in family.FamilyMembers)
+                    foreach (FamilyMember member in family.FamilyMembers)
                     {
-                        _dbContext.Users.Add(user);
-                        UserRole userRole = new UserRole();
-                        userRole.User = user;
-                        userRole.Role = Role.Family_Member;
-                        _dbContext.UserRoles.Add(userRole);
+                        _dbContext.FamilyMembers.Add(member);
                     }
                 }
                 _dbContext.SaveChanges(true);
@@ -104,7 +100,7 @@ namespace MirysList.Controllers
                     {
                         return BadRequest("Family member id is not valid");
                     }
-                    _dbContext.Users.Update(member);
+                    _dbContext.FamilyMembers.Update(member);
                 }
                 _dbContext.Families.Update(family); 
                 _dbContext.SaveChanges(true);
@@ -116,28 +112,5 @@ namespace MirysList.Controllers
            
             return Ok(family);
         }
-
-        //// DELETE: api/Family/5
-        //[HttpDelete("{id}")]
-        //public IActionResult Delete(int id)
-        //{
-        //    var family = _dbContext.Families.SingleOrDefault(m => m.Id == id);
-        //    if (family == null)
-        //    {
-        //        return NotFound("No record found with this Id");
-        //    }
-        //    try
-        //    {
-        //        _dbContext.Families.Remove(family);
-        //        _dbContext.SaveChanges(true);
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        Console.WriteLine(e);
-        //        return BadRequest();
-        //    }
-        //    return Ok();
-        //}
-
     }
 }

@@ -36,7 +36,7 @@ namespace MirysList.Controllers
         [Route("family_members/{id}")]
         public IActionResult GetFamilyMember(int id)
         {
-            var members = _dbContext.Users.Where(m => m.Id == id);
+            var members = _dbContext.FamilyMembers.Where(m => m.Id == id);
             if (members == null)
             {
                 return NotFound("No record found with this Id");
@@ -47,7 +47,7 @@ namespace MirysList.Controllers
 
         // POST: family_member/familyId/2
         [Route("family_member/familyId/{id}")]
-        public IActionResult Post(int id, [FromBody]User user)
+        public IActionResult Post(int id, [FromBody]FamilyMember user)
         {
             if (!ModelState.IsValid)
             {
@@ -62,11 +62,7 @@ namespace MirysList.Controllers
             {
                 family.FamilyMembers.Add(user);
                 _dbContext.Families.Update(family);
-                _dbContext.Users.Add(user);
-                UserRole userRole = new UserRole();
-                userRole.User = user;
-                userRole.Role = Role.Family_Member;
-                _dbContext.UserRoles.Add(userRole);
+                _dbContext.FamilyMembers.Add(user);
                 _dbContext.SaveChanges();
             }
             catch (Exception e)
@@ -79,7 +75,7 @@ namespace MirysList.Controllers
 
         // PUT: family_member/5
         [Route("family_member/{id}")]
-        public IActionResult Put(int id, [FromBody]User user)
+        public IActionResult Put(int id, [FromBody]FamilyMember user)
         {
             if (!ModelState.IsValid)
             {
@@ -91,7 +87,7 @@ namespace MirysList.Controllers
             }
             try
             {
-                _dbContext.Users.Update(user);
+                _dbContext.FamilyMembers.Update(user);
                 _dbContext.SaveChanges(true);
             }
             catch (Exception e)
