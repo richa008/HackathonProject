@@ -29,5 +29,6 @@ namespace MirysList.Models
         public DbSet<ShoppingListItem> ShoppingListItems { get; set; }
 
         public DbSet<FamilyMember> FamilyMembers { get; set; }
+        public DbSet<Lister> Lister { get; set; }
     }
 }
