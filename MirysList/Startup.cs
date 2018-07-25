@@ -25,7 +25,7 @@ namespace MirysList
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<AppDbContext>(option => option.UseSqlServer(Configuration.GetConnectionString("DbContextConnectionString")));
+            services.AddDbContext<AppDbContext>(option => option.UseSqlServer(Configuration["ConnectionString"]));
             services.AddMvc();
         }
 
