@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MirysList.Models;
@@ -9,6 +10,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MirysList.Controllers
 {
+    [Authorize(Policy = "FbLogin")]
+    [Authorize(Policy = "ApprovedLister")]
     [Produces("application/json")]
     public class FamilyController : Controller
     {
@@ -22,9 +25,9 @@ namespace MirysList.Controllers
         // GET: families
         [HttpGet]
         [Route("families/listerId/{id}")]
-        public IActionResult GetFamilies(int id)
+        public IActionResult GetFamilies(string id)
         {
-            var lister = _dbContext.Lister.Include(p => p.Families).SingleOrDefault(m => m.Id == id);
+            var lister = _dbContext.Lister.Include(p => p.Families).SingleOrDefault(m => string.Equals(m.Id, id));
             if (lister == null)
             {
                 return NotFound("No record found with this Id");
@@ -50,9 +53,9 @@ namespace MirysList.Controllers
         // POST: family
         [HttpPost]
         [Route("family/listerId/{id}")]
-        public IActionResult Post(int id, [FromBody]Family family)
+        public IActionResult Post(string id, [FromBody]Family family)
         {
-            var lister = _dbContext.Lister.Include(p => p.Families).SingleOrDefault(m => m.Id == id);
+            var lister = _dbContext.Lister.Include(p => p.Families).SingleOrDefault(m => string.Equals(m.Id, id));
             if (lister == null)
             {
                 return NotFound("No record found with this Id");

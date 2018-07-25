@@ -1,0 +1,63 @@
+﻿@{
+    ViewData["Title"] = "Sample Anonymous User Page (Home Page)";
+}
+
+@*<div class="fb-login-button" onclick="checkLoginState()" data-max-rows="1" data-size="medium" data-button-type="continue_with" data-show-faces="false" data-auto-logout-link="true" data-use-continue-as="true"></div>*@
+@*<button class="btn-group-lg" id="loginButton" onclick="checkLoginState()">Login with Facebook</button>*@ 
+<button class="btn-group-lg" id="loginButton2"><a href="https://www.facebook.com/dialog/oauth?client_id=2112677595641957&redirect_uri=https://localhost:44334/&response_type=code&display=popup&scope=public_profile,email" target="_blank">Login with Facebook</a></button>
+<!--
+  Below we include the Login Button social plugin. This button uses
+  the JavaScript SDK to present a graphical Login button that triggers
+  the FB.login() function when clicked.
+-->
+
+@*<fb:login-button scope="public_profile,email" onlogin="checkLoginState();">
+</fb:login-button>*@
+
+<div id="status">
+</div>
+
+@section Scripts  {
+    <script>
+
+        
+        function checkLoginState() {
+            debugger;
+            var needToLogin = false;
+            FB.getLoginStatus(function (response) {
+                if (response.status !== 'connected') {
+                    needToLogin = true;
+                }
+                else {
+                    $('#loginButton').text("Log out");
+
+                }
+            });
+
+            if (needToLogin === true) {
+                var path = "https://www.facebook.com/dialog/oauth?client_id=2112677595641957&redirect_uri=https://localhost:44334/&response_type=code&display=popup&scope=public_profile,email";
+                //top.location = window.location = path;
+                window.open(path, '_blank', 'location=yes,height=570,width=520,scrollbars=yes,status=yes');
+                //FB.api(path, "get", function (response) {
+                //    var responseCopy = response;
+                //});
+
+                //FB.login(function (response) {
+                //    // handle the response
+                //    var responseCopy = response;
+                //}, { scope: 'public_profile,email' });
+
+                //$.ajax({
+                //    url: path,
+                //    dataType: "application/json",
+                //    success: function (data) {
+                //        var dataCopy = data;
+
+                //    }
+
+                //});
+            }
+        }
+    </script>
+
+}
