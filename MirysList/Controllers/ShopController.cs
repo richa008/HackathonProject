@@ -36,6 +36,7 @@ namespace MirysList.Controllers
         public IActionResult CataLogItems(int catalogId)
         {
 
+
             Catalog catalog = _dbContext.Catalogs.Where(x => x.Id == catalogId).Include(c => c.Items).FirstOrDefault();
             if (catalog != null)
             {
@@ -59,9 +60,16 @@ namespace MirysList.Controllers
             if (familyObj != null)
             {
                 List<ShoppingListItem> listItems = familyObj.listItems;
+                List<ShoppingListItem> resultItems = new List<ShoppingListItem>();
                 if (listItems != null)
                 {
-                    return Ok(listItems);
+                    foreach(ShoppingListItem item in listItems)
+                    {
+                        ShoppingListItem it = _dbContext.ShoppingListItems.Where(x => x.Id == item.Id).FirstOrDefault();
+                        resultItems.Add(it);
+                    }
+
+                    return Ok(resultItems);
                 }
             }
 
@@ -93,21 +101,29 @@ namespace MirysList.Controllers
         [Route("api/Shop/CreateList/{familyId}")]        
         public IActionResult CreateList([FromBody]List<ShoppingListItem> listItems, int familyId)
         {
+            List<UpdatedShoppingListItem> result = new List<UpdatedShoppingListItem>();
             Family familyObj = null;
             try
             {
-                familyObj = _dbContext.Families.Where(x => x.Id == familyId).FirstOrDefault();
+                familyObj = _dbContext.Families.Where(x => x.Id == familyId).Include(y => y.listItems).FirstOrDefault();
                 if (familyObj != null)
                 {                   
                     foreach (ShoppingListItem item in listItems)
                     {
-                        _dbContext.ShoppingListItems.Add(item);
-                        familyObj.listItems.Add(item);
-                        _dbContext.Families.Update(familyObj);
+                        CatalogItem i = _dbContext.CataLogItems.Where(x => x.Id == item.CatalogItemId).FirstOrDefault();
+                        if (i != null)
+                        {
+                            _dbContext.ShoppingListItems.Add(item);
+                            UpdatedShoppingListItem resultItem = new UpdatedShoppingListItem(item);                            
+                            resultItem.CatalogItem = i;
+                            familyObj.listItems.Add(item);
+                            result.Add(resultItem);
+                        }
                     }
-                    
+
+                    _dbContext.Families.Update(familyObj);
                     _dbContext.SaveChanges();
-                    return Ok(familyObj);
+                    return Ok(result);
                 }
             }
             catch(Exception e)
