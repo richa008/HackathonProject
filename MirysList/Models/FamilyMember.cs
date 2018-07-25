@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MirysList.Models
 { 
-    public class User
+    public class FamilyMember
     {
         public long Id { get; set; }
 

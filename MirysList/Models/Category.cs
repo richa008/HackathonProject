@@ -8,10 +8,11 @@ namespace MirysList.Models
 {
     public class Category
     {
-        [Required]
         public int Id { get; set; }
+
         [Required]
         public string Title { get; set; }
+
         public string ImageUrl { get; set; }
     }
 }

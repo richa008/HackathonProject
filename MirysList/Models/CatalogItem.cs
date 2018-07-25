@@ -9,13 +9,15 @@ namespace MirysList.Models
 {
     public class CatalogItem
     {
-        [Required]
         public int Id { get; set; }
+
         [Required]
         public string Title { get; set; }
+
         public string ImageUrl { get; set; }      
+
         public Category Category { get; set; }
-       // public Catalog Catalog { get; set; }
+       
         public string ItemNotes { get; set; }
     }
 }

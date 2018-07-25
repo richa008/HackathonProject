@@ -36,6 +36,7 @@ namespace MirysList.Controllers
         public IActionResult CataLogItems(int catalogId)
         {
 
+
             Catalog catalog = _dbContext.Catalogs.Where(x => x.Id == catalogId).Include(c => c.Items).FirstOrDefault();
             if (catalog != null)
             {
@@ -55,59 +56,54 @@ namespace MirysList.Controllers
         [Route("api/Shop/ShoppingList/{familyId}")]
         public IActionResult ShoppingList(int familyId)
         {
-            Family familyObj = _dbContext.Families.Where(x => x.Id == familyId).Include(u => u.listItems).FirstOrDefault();
+            Family familyObj = _dbContext.Families.Where(x => x.Id == familyId).Include(u => u.ListItems).FirstOrDefault();
             if (familyObj != null)
             {
-                List<ShoppingListItem> listItems = familyObj.listItems;
+                List<ShoppingListItem> listItems = familyObj.ListItems;
+                List<ShoppingListItem> resultItems = new List<ShoppingListItem>();
                 if (listItems != null)
                 {
-                    return Ok(listItems);
+                    foreach(ShoppingListItem item in listItems)
+                    {
+                        ShoppingListItem it = _dbContext.ShoppingListItems.Where(x => x.Id == item.Id).FirstOrDefault();
+                        resultItems.Add(it);
+                    }
+
+                    return Ok(resultItems);
                 }
             }
 
             return NotFound("could not find a list for this family " + familyId);            
         }
 
-        // GET: api/Shop/ListItems
-        //param: listId
-        /*[HttpGet]
-        [Route("api/Shop/ShoppingListItems/{shoppinglistId}")]
-        public IActionResult ShoppingListItems(int shoppinglistId)
-        {
-            ShoppingList list = _dbContext.ShoppingLists.Where(x => x.Id == shoppinglistId).FirstOrDefault();
-            if (list != null)
-            {
-                ICollection<ShoppingListItem> listItems = list.listItems;
-                if (listItems != null)
-                {
-                    return Ok(listItems);
-                }
-            }
-
-            return NotFound("could not find a list for this id " + shoppinglistId);            
-        }*/
-
-
         // POST: api/Shop/CreateList
         [HttpPost]
         [Route("api/Shop/CreateList/{familyId}")]        
         public IActionResult CreateList([FromBody]List<ShoppingListItem> listItems, int familyId)
         {
+            List<UpdatedShoppingListItem> result = new List<UpdatedShoppingListItem>();
             Family familyObj = null;
             try
             {
-                familyObj = _dbContext.Families.Where(x => x.Id == familyId).FirstOrDefault();
+                familyObj = _dbContext.Families.Where(x => x.Id == familyId).Include(y => y.ListItems).FirstOrDefault();
                 if (familyObj != null)
                 {                   
                     foreach (ShoppingListItem item in listItems)
                     {
-                        _dbContext.ShoppingListItems.Add(item);
-                        familyObj.listItems.Add(item);
-                        _dbContext.Families.Update(familyObj);
+                        CatalogItem i = _dbContext.CataLogItems.Where(x => x.Id == item.CatalogItemId).FirstOrDefault();
+                        if (i != null)
+                        {
+                            _dbContext.ShoppingListItems.Add(item);
+                            UpdatedShoppingListItem resultItem = new UpdatedShoppingListItem(item);                            
+                            resultItem.CatalogItem = i;
+                            familyObj.ListItems.Add(item);
+                            result.Add(resultItem);
+                        }
                     }
-                    
+
+                    _dbContext.Families.Update(familyObj);
                     _dbContext.SaveChanges();
-                    return Ok(familyObj);
+                    return Ok(result);
                 }
             }
             catch(Exception e)
