@@ -34,16 +34,20 @@ namespace MirysList.Controllers
         [HttpGet]
         [Route("api/Shop/Catalog/{catalogId}")]
         public IActionResult CataLogItems(int catalogId)
-        {            
-            IQueryable<CatalogItem> cItems = _dbContext.CataLogItems.Where(x => x.Catalog.Id == catalogId).Include(y => y.Category);
-            if (cItems != null)
+        {
+
+
+            Catalog catalog = _dbContext.Catalogs.Where(x => x.Id == catalogId).Include(c => c.Items).FirstOrDefault();
+            if (catalog != null)
             {
-                return Ok(cItems);
+                ICollection<CatalogItem> cItems = catalog.Items;
+                if (cItems != null)
+                {
+                    return Ok(cItems);
+                }
             }
-            else
-            {
-                return NotFound("could not find any catalog items for catalogid " + catalogId);
-            }
+
+            return NotFound("could not find any catalog items for catalogid " + catalogId);            
         }
 
         // GET: api/Shop/List
@@ -52,75 +56,88 @@ namespace MirysList.Controllers
         [Route("api/Shop/ShoppingList/{familyId}")]
         public IActionResult ShoppingList(int familyId)
         {
-            ShoppingList listObj = _dbContext.ShoppingLists.Where(x => x.Id == familyId).Include(u => u.Family).Include(y => y.listItems).FirstOrDefault();
-            if (listObj != null)
+            Family familyObj = _dbContext.Families.Where(x => x.Id == familyId).Include(u => u.ListItems).FirstOrDefault();
+            if (familyObj != null)
             {
-                return Ok(listObj);
+                List<ShoppingListItem> listItems = familyObj.ListItems;
+                List<ShoppingListItem> resultItems = new List<ShoppingListItem>();
+                if (listItems != null)
+                {
+                    foreach(ShoppingListItem item in listItems)
+                    {
+                        ShoppingListItem it = _dbContext.ShoppingListItems.Where(x => x.Id == item.Id).FirstOrDefault();
+                        resultItems.Add(it);
+                    }
+
+                    return Ok(resultItems);
+                }
             }
 
             return NotFound("could not find a list for this family " + familyId);            
         }
 
-        // GET: api/Shop/ListItems
-        //param: listId
-        [HttpGet]
-        [Route("api/Shop/ShoppingListItems/{shoppinglistId}")]
-        public IActionResult ShoppingListItems(int shoppinglistId)
-        {
-            IQueryable<ShoppingListItem> listItems = _dbContext.ShoppingListItems.Where(x => x.ShoppingList.Id == shoppinglistId).Include(u => u.CatalogItem);
-            if (listItems != null)
-            {                
-                return Ok(listItems);
-            }
-
-            return NotFound("could not find a list for this id " + shoppinglistId);            
-        }
-
-
         // POST: api/Shop/CreateList
         [HttpPost]
-        [Route("api/Shop/CreateList")]        
-        public IActionResult CreateList([FromBody]ShoppingList listObj)
-        {            
+        [Route("api/Shop/CreateList/{familyId}")]        
+        public IActionResult CreateList([FromBody]List<ShoppingListItem> listItems, int familyId)
+        {
+            List<UpdatedShoppingListItem> result = new List<UpdatedShoppingListItem>();
+            Family familyObj = null;
             try
             {
-                _dbContext.ShoppingLists.Add(listObj);
-                foreach(ShoppingListItem item in listObj.listItems)
-                {
-                    _dbContext.ShoppingListItems.Add(item);
-                }
+                familyObj = _dbContext.Families.Where(x => x.Id == familyId).Include(y => y.ListItems).FirstOrDefault();
+                if (familyObj != null)
+                {                   
+                    foreach (ShoppingListItem item in listItems)
+                    {
+                        CatalogItem i = _dbContext.CataLogItems.Where(x => x.Id == item.CatalogItemId).FirstOrDefault();
+                        if (i != null)
+                        {
+                            _dbContext.ShoppingListItems.Add(item);
+                            UpdatedShoppingListItem resultItem = new UpdatedShoppingListItem(item);                            
+                            resultItem.CatalogItem = i;
+                            familyObj.ListItems.Add(item);
+                            result.Add(resultItem);
+                        }
+                    }
 
-                _dbContext.SaveChanges();
+                    _dbContext.Families.Update(familyObj);
+                    _dbContext.SaveChanges();
+                    return Ok(result);
+                }
             }
-            catch
+            catch(Exception e)
             {
-                return NotFound("could not create a list");
+                return NotFound("could not create a list : " + e);
             }
             
-            return Ok(listObj);
+            return NotFound("could not create a list");
         }
 
         // POST: api/Shop/UpdateList
         [HttpPost]
-        [Route("api/Shop/UpdateList/{listId}")]
-        public IActionResult UpdateList([FromBody]ShoppingList updatedListObj, int listId)
+        [Route("api/Shop/UpdateList/{familyId}")]
+        public IActionResult UpdateList([FromBody]List<ShoppingListItem> updatedListItems, int familyId)
         {
-            ShoppingList listObj;
+            Family familyObj;
             try
             {
-                listObj = _dbContext.ShoppingLists.Where(x => x.Id == listId).FirstOrDefault();
-                if(listObj != null)
-                {                                      
-                    _dbContext.ShoppingLists.Update(updatedListObj);
-                    _dbContext.SaveChanges();
-                }
+                familyObj = _dbContext.Families.Where(x => x.Id == familyId).FirstOrDefault();
+                if (familyObj != null)
+                {
+                    foreach (ShoppingListItem item in updatedListItems)
+                    {
+                        _dbContext.ShoppingListItems.Update(item);
+                        _dbContext.SaveChanges();
+                    }
+                }                
             }
-            catch
+            catch(Exception e)
             {
-                return NotFound("could not update a list " + listId);
+                return NotFound("could not update a list : " + e.Message);
             }
 
-            return Ok(updatedListObj);
+            return Ok(updatedListItems);
         }       
     }
 }

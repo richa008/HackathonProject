@@ -10,7 +10,7 @@ namespace MirysList.Models
     {
         [Required]
         public int Id { get; set; }
-        public Family Family { get; set; }
+        public string Title { get; set; }
         public List<ShoppingListItem> listItems { get; set; }
     }
 }
