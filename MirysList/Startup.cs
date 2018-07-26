@@ -47,12 +47,71 @@ namespace MirysList
 
         private static void AddSeedData(AppDbContext dbContext)
         {
+            AddFamilySeedData(dbContext);
+            AddCatalogSeedData(dbContext);
+        }
+
+        private static void AddFamilySeedData(AppDbContext dbContext)
+        {
+            User user1 = new User { FirstName = "Shriya", LastName = "Aslamy", Gender = Gender.Female, BirthDate = new DateTime(1986, 4, 5), PhoneNumber = "425-345-3334", Language = "Urdu"};
+            User user2 = new User { FirstName = "Amir", LastName = "Aslamy", Gender = Gender.Male, BirthDate = new DateTime(1985, 6, 20), PhoneNumber = "233-345-3334", Language = "Urdu"};
+            User user3 = new User { FirstName = "Seema", LastName = "Sefat", Gender = Gender.Female, BirthDate = new DateTime(1999, 4, 5), PhoneNumber = "923-345-3334", Language = "Arabic" };
+            User user4 = new User { FirstName = "Ali", LastName = "Sefat", Gender = Gender.Male, BirthDate = new DateTime(2008, 6, 21), PhoneNumber = "425-345-3234", Language = "Arabic" };
+            User user5 = new User { FirstName = "Maya", LastName = "Sefat", Gender = Gender.Female, BirthDate = new DateTime(2015, 8, 9), PhoneNumber = "433-345-3234", Language = "Arabic" };
+            User user6 = new User { FirstName = "Temur", LastName = "Sefat", Gender = Gender.Male, BirthDate = new DateTime(1998, 6, 20), PhoneNumber = "212-345-5344", Language = "Arabic" };
+            
+            dbContext.Users.AddRange(new List<User> { user1, user2, user3, user4, user5, user6 });
+
+            Family family1 = new Family
+            {
+                FamilyName = "Aslamy",
+                FamilyCareOf = "Miry",
+                PhoneNumber = "425-345-3334",
+                Story = "Family from Afghanistan arrived mid 2017 and settled in San Diego. Both husband and wife are civil engineers and previously worked with USAID in Afghanistan, but due to imminent danger they were forced to leave their country",
+                StreetAddressLine1 = "32 Dennis Street",
+                City = "San Diego",
+                Country = "USA",
+                PostalCode = "90210",
+                FamilyMembers = new List<User> { user1, user2 }
+            };
+
+            Family family2 = new Family
+            {
+                FamilyName = "Sefat",
+                FamilyCareOf = "Jones",
+                PhoneNumber = "235-345-3334",
+                Story = "The Sefat Family moved with 2 kids from Syria. Dad was mechanical driver and security guard. Due to being in danger they left their home country and were eventually resettled in Los Angeles. ",
+                StreetAddressLine1 = "3234 Main Street",
+                City = "Los Angeles",
+                Country = "USA",
+                PostalCode = "98304",
+                FamilyMembers = new List<User> { user3, user4, user5, user6 }
+            };
+
+            Family family3 = new Family
+            {
+                FamilyName = "Noori",
+                FamilyCareOf = "Jones",
+                PhoneNumber = "235-233-2224",
+                Story = "The Noori Family are from Afghanistan where they helped women and girls have access to education. They worked closely with American troops and were finally granted refugee status last year.",
+                StreetAddressLine1 = "3234 Main Street",
+                City = "Los Angeles",
+                Country = "USA",
+                PostalCode = "98304"
+            };
+            dbContext.Families.AddRange(new List<Family> { family1, family2, family3});
+            dbContext.SaveChanges();
+
+        }
+
+        private static void AddCatalogSeedData(AppDbContext dbContext)
+        {
             // filling in demo categories
             Category beauty = new Category { Title = "Beauty and personal care", ImageUrl = "https://www.google.com/imgres?imgurl=https%3A%2F%2Fblog.euromonitor.com%2Fwp-content%2Fuploads%2F2017%2F09%2FBeauty-Brushes-2.jpg&imgrefurl=https%3A%2F%2Fblog.euromonitor.com%2F2017%2F10%2Fasia-leader-global-skincare-sales-in-cosmetics-asia-2017.html&docid=sUZ5ed7dS0RcpM&tbnid=A2iMYmn2OKDfXM%3A&vet=10ahUKEwjnrpi5u7ncAhUGIDQIHeu_CWQQMwiPASg5MDk..i&w=1200&h=800&bih=584&biw=857&q=beauty%20and%20personal%20care&ved=0ahUKEwjnrpi5u7ncAhUGIDQIHeu_CWQQMwiPASg5MDk&iact=mrc&uact=8" };
             Category laundry = new Category { Title = "Laundry", ImageUrl = "https://www.google.com/imgres?imgurl=https%3A%2F%2Ffacilities.georgetown.edu%2Fsites%2Ffacilities%2Ffiles%2Fstyles%2Frotator_image_overlay_unit_profile%2Fpublic%2Flaundry_basket_0.jpg&imgrefurl=https%3A%2F%2Ffacilities.georgetown.edu%2FLaundry&docid=UozY7Fv9P23v8M&tbnid=Av53_BR8DIxs8M%3A&vet=10ahUKEwj0iaeFvLncAhWpGDQIHVklC2EQMwigAigDMAM..i&w=768&h=433&bih=584&biw=857&q=laundry&ved=0ahUKEwj0iaeFvLncAhWpGDQIHVklC2EQMwigAigDMAM&iact=mrc&uact=8" };
             Category furniture = new Category { Title = "Furniture", ImageUrl = "https://www.google.com/imgres?imgurl=http%3A%2F%2Fwww.foliot.com%2Fsites%2Fdefault%2Ffiles%2Ffoliot-furniture_adirondack-bedroom_940x400.jpg&imgrefurl=http%3A%2F%2Fwww.foliot.com%2F&docid=K1SIr4dSMRIUuM&tbnid=FBZF9O5Hb-_RSM%3A&vet=10ahUKEwjWv9PJrLvcAhUlKX0KHUkOAVAQMwiDAygQMBA..i&w=940&h=400&bih=689&biw=1371&q=furniture&ved=0ahUKEwjWv9PJrLvcAhUlKX0KHUkOAVAQMwiDAygQMBA&iact=mrc&uact=8" };
             Category rugs = new Category { Title = "Rugs", ImageUrl = "https://www.google.com/imgres?imgurl=https%3A%2F%2Fcdn.shadesoflight.com%2Fmedia%2FW1siZiIsIjIwMTcvMTIvMDcvMTYvMTcvMTUvNjIvWFIxMzA1NC5qcGciXSxbInAiLCJvcHRpbSJdXQ%2FXR13054.jpg%3Fsha%3D53aa341853482e50&imgrefurl=https%3A%2F%2Fwww.shadesoflight.com%2Fpages%2Frugs&docid=fOpOCwEQ79rdKM&tbnid=1PoH9x1BlFBbHM%3A&vet=10ahUKEwjpvrPgrLvcAhXIITQIHWjUDYIQMwjeAigOMA4..i&w=609&h=427&bih=689&biw=1371&q=rugs&ved=0ahUKEwjpvrPgrLvcAhXIITQIHWjUDYIQMwjeAigOMA4&iact=mrc&uact=8" };
-            
+
             dbContext.Categories.AddRange(new List<Category> { beauty, laundry, furniture, rugs });
 
             // filling in demo catalog items
