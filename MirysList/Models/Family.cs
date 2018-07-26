@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
-using System.ComponentModel.DataAnnotations;
 
 namespace MirysList.Models
 {
@@ -27,9 +26,9 @@ namespace MirysList.Models
         public string Story { get; set; }
 
         [Required]
-        public string StreetAdresssLine1 { get; set; }
+        public string StreetAddressLine1 { get; set; }
 
-        public string StreetAdresssLine2 { get; set; }
+        public string StreetAddressLine2 { get; set; }
 
         [Required]
         public string City { get; set; }
