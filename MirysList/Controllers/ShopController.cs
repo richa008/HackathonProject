@@ -26,7 +26,9 @@ namespace MirysList.Controllers
         [Route("api/Shop/Catalog")]
         public IActionResult Catalog()
         {
-            return Ok(_dbContext.Catalogs);
+            IQueryable<Catalog> catalogList = _dbContext.Catalogs.Include(catalog => catalog.Items).ThenInclude(catalogItem => catalogItem.Category);
+
+            return Ok(catalogList);
         }
 
         // GET: api/Shop/CatalogItems
@@ -35,8 +37,6 @@ namespace MirysList.Controllers
         [Route("api/Shop/Catalog/{catalogId}")]
         public IActionResult CataLogItems(int catalogId)
         {
-
-
             Catalog catalog = _dbContext.Catalogs.Where(x => x.Id == catalogId).Include(c => c.Items).FirstOrDefault();
             if (catalog != null)
             {
